@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "288935293555",
+    "project_id": "aira-soal",
+    "storage_bucket": "aira-soal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:288935293555:android:79034a1696111dc5c93006",
+        "android_client_info": {
+          "package_name": "aira.soal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCo-UTRHPNB8eRs95eBRZk_VY8FxcD_PGs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

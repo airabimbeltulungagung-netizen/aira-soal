@@ -1,0 +1,39 @@
+name: aira_soal
+description: "Aira Bimbel - AI Generator Soal Premium."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  url_launcher: ^6.3.0
+  google_generative_ai: ^0.4.0
+  webview_flutter: ^4.10.0
+  firebase_core: ^3.0.0
+  firebase_auth: ^5.0.0
+  google_sign_in: ^6.2.1
+  cloud_firestore: ^5.0.0
+  flutter_tex: ^5.0.0 # <--- Menggantikan flutter_math_fork yang error
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+# Konfigurasi Ikon Aplikasi
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/aira_soal_logo.png"
+  min_sdk_android: 21
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/aira_soal_logo.png
