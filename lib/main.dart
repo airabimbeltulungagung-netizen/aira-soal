@@ -1,16 +1,65 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-// Firebase dan GoogleSignIn DIHAPUS karena pemicu crash
 import 'apk_aira_page.dart';
 import 'result_screen.dart';
 import 'ai_service.dart';
 import 'login_page.dart';
 import 'history_page.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // Firebase.initializeApp() DIHAPUS agar tidak mental
-  runApp(const AiraBimbelApp());
+// 1. JARING PENANGKAP ERROR (Agar tidak langsung keluar/mental)
+void main() {
+  runZonedGuarded(
+    () {
+      WidgetsFlutterBinding.ensureInitialized();
+      runApp(const AiraBimbelApp());
+    },
+    (error, stackTrace) {
+      debugPrint("FATAL ERROR: $error");
+      runApp(ErrorWidgetApp(error: error.toString()));
+    },
+  );
+}
+
+// 2. TAMPILAN JIKA APLIKASI MENTAL (Layar Merah)
+class ErrorWidgetApp extends StatelessWidget {
+  final String error;
+  const ErrorWidgetApp({super.key, required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        backgroundColor: Colors.red[900],
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.bug_report, color: Colors.white, size: 60),
+                const SizedBox(height: 20),
+                const Text(
+                  "APLIKASI MENTAL!",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  error,
+                  style: const TextStyle(color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class AiraBimbelApp extends StatelessWidget {
@@ -23,7 +72,6 @@ class AiraBimbelApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF0F0A1F),
       ),
-      // Langsung ke GeneratorScreen agar tidak perlu Auth Firebase
       home: const GeneratorScreen(),
     );
   }
@@ -82,13 +130,10 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () {
-              // Logika logout bisa Anda ganti ke navigasi ke LoginPage
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-              );
-            },
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            ),
           ),
         ],
       ),
@@ -165,63 +210,8 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 40),
-              const Text(
-                "Preview Hasil Soal",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 15),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(30),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Center(
-                      child: Text(
-                        "UJIAN SEKOLAH",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const Divider(color: Colors.black, thickness: 2),
-                    const SizedBox(height: 20),
-                    Text(
-                      "Topik: ${_topikController.text.isEmpty ? '...' : _topikController.text}",
-                      style: const TextStyle(color: Colors.black, fontSize: 14),
-                    ),
-                    Text(
-                      "Kelas: ${_kelasController.text.isEmpty ? '...' : _kelasController.text}",
-                      style: const TextStyle(color: Colors.black, fontSize: 14),
-                    ),
-                    Text(
-                      "Jumlah: ${_jumlahSoalController.text.isEmpty ? '...' : _jumlahSoalController.text} Soal",
-                      style: const TextStyle(color: Colors.black, fontSize: 14),
-                    ),
-                  ],
                 ),
               ),
             ],
@@ -234,19 +224,18 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
-          if (index == 1) {
+          if (index == 1)
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const HistoryPage()),
             );
-          } else if (index == 2) {
+          else if (index == 2)
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const ApkAiraPage()),
             );
-          } else if (index == 3) {
+          else if (index == 3)
             _launchURL("https://wa.me/6285704351856");
-          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.edit), label: "Buat Soal"),
