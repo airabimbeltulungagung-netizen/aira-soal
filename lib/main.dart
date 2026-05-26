@@ -7,7 +7,7 @@ import 'ai_service.dart';
 import 'login_page.dart';
 import 'history_page.dart';
 
-// 1. JARING PENANGKAP ERROR (Agar tidak langsung keluar/mental)
+// Menjalankan aplikasi dengan penanganan error global
 void main() {
   runZonedGuarded(
     () {
@@ -16,50 +16,9 @@ void main() {
     },
     (error, stackTrace) {
       debugPrint("FATAL ERROR: $error");
-      runApp(ErrorWidgetApp(error: error.toString()));
+      // Tidak perlu inisialisasi apa-apa lagi di sini
     },
   );
-}
-
-// 2. TAMPILAN JIKA APLIKASI MENTAL (Layar Merah)
-class ErrorWidgetApp extends StatelessWidget {
-  final String error;
-  const ErrorWidgetApp({super.key, required this.error});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.red[900],
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.bug_report, color: Colors.white, size: 60),
-                const SizedBox(height: 20),
-                const Text(
-                  "APLIKASI MENTAL!",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  error,
-                  style: const TextStyle(color: Colors.white70),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 class AiraBimbelApp extends StatelessWidget {
@@ -85,6 +44,7 @@ class GeneratorScreen extends StatefulWidget {
 }
 
 class _GeneratorScreenState extends State<GeneratorScreen> {
+  // ... (Controller Anda tetap sama, tidak perlu diubah)
   final TextEditingController _topikController = TextEditingController();
   final TextEditingController _kelasController = TextEditingController();
   final TextEditingController _mapelController = TextEditingController();
@@ -93,8 +53,9 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
 
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
-    if (await canLaunchUrl(uri))
+    if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Widget _buildTextField(
@@ -107,7 +68,6 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        onChanged: (value) => setState(() {}),
         decoration: InputDecoration(
           hintText: hint,
           filled: true,
@@ -141,21 +101,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "Aira Soal",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const Text(
-                "Generator Soal AI",
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 30),
               _buildTextField("Topik / Materi Soal", _topikController),
               _buildTextField("Kelas (Contoh: 12 IPA)", _kelasController),
               _buildTextField("Mata Pelajaran", _mapelController),
@@ -191,6 +137,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
                         model: _modelSoalController.text,
                         jumlah: _jumlahSoalController.text,
                       );
+                      if (!mounted) return;
                       Navigator.pop(context);
                       Navigator.push(
                         context,
@@ -202,7 +149,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(
                         context,
-                      ).showSnackBar(SnackBar(content: Text("Error AI: $e")));
+                      ).showSnackBar(SnackBar(content: Text("Error: $e")));
                     }
                   },
                   child: const Text(

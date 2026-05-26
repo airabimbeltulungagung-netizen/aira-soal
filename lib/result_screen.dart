@@ -1,67 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tex/flutter_tex.dart';
+import 'package:tex_text/tex_text.dart';
 
 class ResultScreen extends StatelessWidget {
   final Map<String, String> data;
-  final bool showKey;
 
-  const ResultScreen({super.key, required this.data, this.showKey = true});
+  const ResultScreen({super.key, required this.data});
 
   Widget _buildFormattedText(String text) {
-    // FIX: Pastikan text tidak kosong sebelum diproses
     if (text.isEmpty) {
-      return const Center(
-        child: Text(
-          "Data tidak tersedia",
-          style: TextStyle(color: Colors.grey),
-        ),
-      );
+      return const Text("Data kosong", style: TextStyle(color: Colors.white));
     }
 
-    return TeXView(
-      child: TeXViewDocument(
-        text.replaceAll(r'$', r'$$'), // Konversi ke blok matematika
-        style: const TeXViewStyle(
-          textAlign: TeXViewTextAlign.left,
-          fontStyle: TeXViewFontStyle(fontSize: 16, fontFamily: 'Roboto'),
-        ),
-      ),
+    // Kita bersihkan teks terlebih dahulu
+    final cleanText = text.trim();
+
+    // Widget TexText tidak punya parameter 'onError',
+    // jadi kita langsung pasang widget-nya.
+    // TexText sudah didesain cukup tangguh untuk merender LaTeX standar.
+    return TexText(
+      cleanText,
+      style: const TextStyle(color: Colors.white, fontSize: 18),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final String soal = data['soal'] ?? 'Data soal tidak ditemukan.';
-    final String kunci =
-        data['kunci'] ?? 'Kunci atau pembahasan tidak tersedia.';
-
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0F0A1F), // Konsisten tema mewah
-        appBar: AppBar(
-          title: const Text("Hasil Generate Soal"),
-          backgroundColor: const Color(0xFF1A1530),
-          bottom: const TabBar(
-            indicatorColor: Color(0xFFFFD700),
-            tabs: [
-              Tab(icon: Icon(Icons.quiz), text: "Soal"),
-              Tab(icon: Icon(Icons.key), text: "Kunci"),
-            ],
-          ),
-        ),
-        body: TabBarView(
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F0A1F),
+      appBar: AppBar(
+        title: const Text("Hasil Soal"),
+        backgroundColor: const Color(0xFF1A1530),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: _buildFormattedText(soal),
-            ),
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: _buildFormattedText(
-                showKey ? kunci : 'Kunci disembunyikan',
-              ),
-            ),
+            const Text("Soal:", style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 10),
+            _buildFormattedText(data['soal'] ?? ""),
+
+            const SizedBox(height: 30),
+            const Divider(color: Colors.white24),
+            const SizedBox(height: 20),
+
+            const Text("Pembahasan:", style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 10),
+            _buildFormattedText(data['kunci'] ?? ""),
+
+            const SizedBox(height: 50),
           ],
         ),
       ),
