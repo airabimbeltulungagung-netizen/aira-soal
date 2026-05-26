@@ -1,7 +1,7 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 class AiService {
-  // Masukkan API Key Anda di sini atau gunakan dotenv
+  // GANTI INI DENGAN API KEY ANDA YANG VALID
   static const String _apiKey = 'AIzaSyABTD5CSVOOYGiroxov2NBJNkmu-wNAzrw';
 
   static Future<Map<String, String>> generateSoal({
@@ -11,57 +11,51 @@ class AiService {
     required String model,
     required String jumlah,
   }) async {
+    // Validasi API Key sebelum melakukan request
+    if (_apiKey.isEmpty || _apiKey == 'ISI_API_KEY_ANDA_DI_SINI') {
+      throw Exception("API Key belum diatur!");
+    }
+
     try {
-      // 1. Gunakan model yang teruji.
-      // Penting: Jangan gunakan prefix 'models/' di sini.
       final modelAI = GenerativeModel(
         model: 'gemini-1.5-flash',
         apiKey: _apiKey,
       );
 
+      // Kita buat prompt yang meminta format spesifik agar mudah dipisahkan
       final prompt =
           '''
-      Buatkan $jumlah soal untuk mapel $mapel, kelas $kelas, dengan topik $topik.
-      Tipe soal: $model.
-      
-      PENTING - IKUTI FORMAT INI DENGAN KETAT:
-      SOAL:
-      [Tulis daftar soal dengan nomor urut di sini. Gunakan format LaTeX untuk matematika: \$contoh_rumus\$]
-      
-      KUNCI:
-      [Tulis kunci jawaban atau pembahasan di sini]
+        Buatkan $jumlah soal $model untuk materi $topik, kelas $kelas, mata pelajaran $mapel.
+        
+        Format output:
+        [SOAL]
+        (Tuliskan soal-soal di sini)
+        [PEMBAHASAN]
+        (Tuliskan kunci jawaban dan pembahasan di sini)
       ''';
 
       final response = await modelAI.generateContent([Content.text(prompt)]);
-      final text = response.text ?? "";
 
-      // 2. Gunakan Regular Expression untuk hasil yang lebih tangguh (robust)
-      // Ini mencari teks di antara "SOAL:" dan "KUNCI:" serta setelah "KUNCI:"
-      final regExp = RegExp(r"SOAL:(.*)KUNCI:(.*)", dotAll: true);
-      final match = regExp.firstMatch(text);
+      if (response.text != null) {
+        // Logika untuk memisahkan Soal dan Pembahasan
+        String fullText = response.text!;
+        String soal = "";
+        String kunci = "";
 
-      if (match != null) {
-        return {
-          'soal': match.group(1)?.trim() ?? "Soal tidak ditemukan.",
-          'kunci': match.group(2)?.trim() ?? "Kunci tidak ditemukan.",
-        };
+        if (fullText.contains("[SOAL]") && fullText.contains("[PEMBAHASAN]")) {
+          soal = fullText.split("[SOAL]")[1].split("[PEMBAHASAN]")[0].trim();
+          kunci = fullText.split("[PEMBAHASAN]")[1].trim();
+        } else {
+          soal = fullText;
+          kunci = "Pembahasan tidak ditemukan dalam format terstruktur.";
+        }
+
+        return {'soal': soal, 'kunci': kunci};
       } else {
-        // Fallback jika AI tidak mengikuti format
-        return {
-          'soal': text,
-          'kunci':
-              'AI tidak mengikuti format penulisan, tapi ini respon mentahnya.',
-        };
+        throw Exception("AI tidak merespon.");
       }
     } catch (e) {
-      // 3. Log error ke console untuk tracking di masa depan
-      print("Error AI Service: $e");
-
-      return {
-        'soal': 'Terjadi kendala teknis saat menghubungi server AI.',
-        'kunci':
-            'Periksa koneksi internet atau sisa kuota API Key Anda. Error: ${e.toString()}',
-      };
+      throw Exception("Gagal terhubung ke AI: ${e.toString()}");
     }
   }
 }

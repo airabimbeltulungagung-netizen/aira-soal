@@ -2,26 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  bool _isLoading = false;
+
   Future<void> _signInWithGoogle(BuildContext context) async {
+    setState(() => _isLoading = true);
+
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      // Jika user menekan tombol kembali/batal, stop proses
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
       final GoogleSignInAuthentication googleAuth =
-          await googleUser!.authentication;
+          await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
+
+      // Proses Login ke Firebase
       await FirebaseAuth.instance.signInWithCredential(credential);
+
+      // Tidak perlu Navigator, main.dart akan otomatis mengarahkan ke GeneratorScreen
     } catch (e) {
+      debugPrint("Login Error: $e");
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Login Gagal: $e"),
+          content: Text("Gagal Login: ${e.toString()}"),
           backgroundColor: Colors.redAccent,
         ),
       );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -31,7 +56,6 @@ class LoginPage extends StatelessWidget {
       body: Container(
         width: double.infinity,
         decoration: const BoxDecoration(
-          // Gradient Mewah Deep Purple
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -41,18 +65,13 @@ class LoginPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo Aplikasi yang sudah di-generate
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Image.asset(
-                'assets/aira_soal_logo.png',
-                width: 140,
-                height: 140,
-              ),
+              child: const Icon(Icons.school, size: 80, color: Colors.white),
             ),
             const SizedBox(height: 40),
             const Text(
@@ -66,37 +85,31 @@ class LoginPage extends StatelessWidget {
             ),
             const Text(
               "Eksklusif AI Learning Partner",
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-                letterSpacing: 1,
-              ),
+              style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 60),
 
-            // Tombol Login dengan aksen Gold
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 50),
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(
-                    0xFFFFD700,
-                  ), // Warna Gold Premium
-                  foregroundColor: Colors.black87,
-                  minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+            _isLoading
+                ? const CircularProgressIndicator(color: Colors.amber)
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 50),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFD700),
+                        foregroundColor: Colors.black87,
+                        minimumSize: const Size(double.infinity, 55),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      icon: const Icon(Icons.login),
+                      label: const Text(
+                        "MASUK DENGAN GOOGLE",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () => _signInWithGoogle(context),
+                    ),
                   ),
-                  elevation: 5,
-                ),
-                icon: const Icon(Icons.login, size: 24),
-                label: const Text(
-                  "MASUK DENGAN GOOGLE",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                onPressed: () => _signInWithGoogle(context),
-              ),
-            ),
             const SizedBox(height: 20),
             const Text(
               "Dengan melanjutkan, Anda setuju dengan ketentuan Aira",

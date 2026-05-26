@@ -2,24 +2,65 @@ import 'package:flutter/material.dart';
 import 'package:tex_text/tex_text.dart';
 
 class ResultScreen extends StatelessWidget {
-  final Map<String, String> data;
+  // Jika data berupa String (bukan Map), kita tetap bisa menanganinya
+  final dynamic data;
 
   const ResultScreen({super.key, required this.data});
 
-  Widget _buildFormattedText(String text) {
-    if (text.isEmpty) {
-      return const Text("Data kosong", style: TextStyle(color: Colors.white));
-    }
+  // Fungsi untuk mendapatkan teks dari data, baik itu Map atau String
+  String _getSoal() {
+    if (data is Map) return data['soal'] ?? "Soal tidak tersedia.";
+    return data.toString();
+  }
 
-    // Kita bersihkan teks terlebih dahulu
-    final cleanText = text.trim();
+  String _getKunci() {
+    if (data is Map) return data['kunci'] ?? "Pembahasan tidak tersedia.";
+    return "Pembahasan tidak tersedia.";
+  }
 
-    // Widget TexText tidak punya parameter 'onError',
-    // jadi kita langsung pasang widget-nya.
-    // TexText sudah didesain cukup tangguh untuk merender LaTeX standar.
-    return TexText(
-      cleanText,
-      style: const TextStyle(color: Colors.white, fontSize: 18),
+  Widget _buildSection(String title, String content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.amber,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Builder(
+            builder: (context) {
+              try {
+                return TexText(
+                  content.isEmpty ? "Tidak ada konten." : content,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    height: 1.5,
+                  ),
+                );
+              } catch (e) {
+                // Fallback jika LaTeX gagal dirender
+                return Text(
+                  content,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                );
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -28,27 +69,27 @@ class ResultScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0A1F),
       appBar: AppBar(
-        title: const Text("Hasil Soal"),
+        title: const Text("Hasil Generate"),
         backgroundColor: const Color(0xFF1A1530),
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Soal:", style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 10),
-            _buildFormattedText(data['soal'] ?? ""),
-
-            const SizedBox(height: 30),
-            const Divider(color: Colors.white24),
-            const SizedBox(height: 20),
-
-            const Text("Pembahasan:", style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 10),
-            _buildFormattedText(data['kunci'] ?? ""),
-
-            const SizedBox(height: 50),
+            _buildSection("SOAL:", _getSoal()),
+            const SizedBox(height: 25),
+            _buildSection("PEMBAHASAN:", _getKunci()),
+            const SizedBox(height: 40),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              child: const Text("KEMBALI KE BERANDA"),
+            ),
           ],
         ),
       ),
