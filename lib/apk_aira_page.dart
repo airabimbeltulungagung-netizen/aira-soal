@@ -9,11 +9,24 @@ class ApkAiraPage extends StatefulWidget {
 
 class _ApkAiraPageState extends State<ApkAiraPage> {
   late final WebViewController _controller;
+  bool _isLoading =
+      true; // Tambahkan loading agar user tahu aplikasinya tidak hang
+
   @override
   void initState() {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) => setState(() => _isLoading = true),
+          onPageFinished: (String url) => setState(() => _isLoading = false),
+          onWebResourceError: (WebResourceError error) {
+            // Ini mencegah aplikasi crash kalau internet mati atau gagal load
+            debugPrint("WebView Error: ${error.description}");
+          },
+        ),
+      )
       ..loadRequest(Uri.parse("https://lynk.id/farhanmahendra"));
   }
 
@@ -24,7 +37,15 @@ class _ApkAiraPageState extends State<ApkAiraPage> {
         title: const Text("Download APK Aira"),
         backgroundColor: const Color(0xFF1A1530),
       ),
-      body: WebViewWidget(controller: _controller),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -8,33 +8,45 @@ class ResultScreen extends StatelessWidget {
   const ResultScreen({super.key, required this.data, this.showKey = true});
 
   Widget _buildFormattedText(String text) {
+    // FIX: Pastikan text tidak kosong sebelum diproses
+    if (text.isEmpty) {
+      return const Center(
+        child: Text(
+          "Data tidak tersedia",
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
     return TeXView(
       child: TeXViewDocument(
-        text.replaceAll(r'$', r'$$'),
-        // Menggunakan constructor kosong untuk menghindari error 'undefined'
-        style: const TeXViewStyle(),
+        text.replaceAll(r'$', r'$$'), // Konversi ke blok matematika
+        style: const TeXViewStyle(
+          textAlign: TeXViewTextAlign.left,
+          fontStyle: TeXViewFontStyle(fontSize: 16, fontFamily: 'Roboto'),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // --- MASTER SYNC LOGIC ---
     final String soal = data['soal'] ?? 'Data soal tidak ditemukan.';
     final String kunci =
         data['kunci'] ?? 'Kunci atau pembahasan tidak tersedia.';
-    // -------------------------
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
+        backgroundColor: const Color(0xFF0F0A1F), // Konsisten tema mewah
         appBar: AppBar(
           title: const Text("Hasil Generate Soal"),
           backgroundColor: const Color(0xFF1A1530),
           bottom: const TabBar(
+            indicatorColor: Color(0xFFFFD700),
             tabs: [
-              Tab(text: "Soal"),
-              Tab(text: "Kunci & Pembahasan"),
+              Tab(icon: Icon(Icons.quiz), text: "Soal"),
+              Tab(icon: Icon(Icons.key), text: "Kunci"),
             ],
           ),
         ),

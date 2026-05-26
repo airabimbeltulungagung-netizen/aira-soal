@@ -6,7 +6,7 @@ class AiService {
 
   // Menggunakan 'gemini-pro' atau 'gemini-1.5-flash'
   static final GenerativeModel _model = GenerativeModel(
-    model: 'gemini-pro',
+    model: 'gemini-1.5-flash',
     apiKey: _apiKey,
   );
 

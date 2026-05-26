@@ -1,16 +1,16 @@
-// buildscript digunakan untuk mendefinisikan plugin yang dipakai di level project
 buildscript {
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        // Plugin Google Services untuk Firebase (Wajib untuk Login Google)
+        // Plugin Google Services untuk Firebase 
         classpath("com.google.gms:google-services:4.4.1")
+        // Tambahkan ini jika Anda menggunakan Kotlin terbaru
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0")
     }
 }
 
-// allprojects untuk mendefinisikan repositori yang digunakan semua modul
 allprojects {
     repositories {
         google()
@@ -18,11 +18,8 @@ allprojects {
     }
 }
 
-// Konfigurasi path build agar rapi
-val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
+// Konfigurasi path build (tetap sama, ini sudah benar)
+val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
@@ -34,7 +31,6 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
-// Task untuk membersihkan folder build
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }

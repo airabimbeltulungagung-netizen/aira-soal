@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+// Firebase dan GoogleSignIn DIHAPUS karena pemicu crash
 import 'apk_aira_page.dart';
 import 'result_screen.dart';
 import 'ai_service.dart';
 import 'login_page.dart';
-import 'history_page.dart'; // IMPORT FILE HISTORY PAGE DISINI
+import 'history_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  // Firebase.initializeApp() DIHAPUS agar tidak mental
   runApp(const AiraBimbelApp());
 }
 
@@ -25,12 +23,8 @@ class AiraBimbelApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color(0xFF0F0A1F),
       ),
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          return snapshot.hasData ? const GeneratorScreen() : const LoginPage();
-        },
-      ),
+      // Langsung ke GeneratorScreen agar tidak perlu Auth Firebase
+      home: const GeneratorScreen(),
     );
   }
 }
@@ -88,9 +82,12 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await GoogleSignIn().signOut();
-              await FirebaseAuth.instance.signOut();
+            onPressed: () {
+              // Logika logout bisa Anda ganti ke navigasi ke LoginPage
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
             },
           ),
         ],
@@ -238,7 +235,6 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
           if (index == 1) {
-            // FIX: Mengarahkan ke HistoryPage
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const HistoryPage()),
